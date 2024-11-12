@@ -13,3 +13,4 @@ object RetrofitHelper {
         return retrofit.create(ApiServiceJsonPlaceholder::class.java)
     }
 }
+
