@@ -1,8 +1,6 @@
 package com.example.c2
 
 import android.os.Bundle
-import android.util.Log
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -20,57 +18,51 @@ import com.example.c2.ui.theme.C2Theme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import retrofit2.Response
-
 import androidx.compose.runtime.*
-
 import androidx.compose.foundation.lazy.items
-
-
+import android.annotation.SuppressLint
 
 class MainActivity : ComponentActivity() {
+    @SuppressLint("CoroutineCreationDuringComposition")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        // Instancia de Retrofit
-        val retrofit = RetrofitHelper.getInstance()
-
-        // Estado mutable para la lista de superhéroes
-        var superheroesList by mutableStateOf<List<SuperHeroItemResponse>>(emptyList())
-
-        // Llama a la API en un coroutine para obtener los datos
-        lifecycleScope.launch(Dispatchers.IO) {
-            val response: Response<SuperHeroDataResponse> = retrofit.getSuperheroes("Q")
-            withContext(Dispatchers.Main) {
-                if (response.isSuccessful) {
-                    // Actualiza la lista de superhéroes
-                    superheroesList = response.body()?.results ?: emptyList()
-                    Toast.makeText(this@MainActivity, "Datos cargados", Toast.LENGTH_SHORT).show()
-                } else {
-                    Log.e("Error", "Error al obtener los datos: ${response.errorBody()}")
-                }
-            }
-        }
-
-        // Configura el contenido de la actividad
         setContent {
             C2Theme {
-                Surface(modifier = Modifier.fillMaxSize()) {
-                    // Llama a SuperheroList y le pasa la lista de superhéroes
-                    SuperheroList(superheroesList)
+                Surface {
+                    val retrofit = RetrofitHelper.getInstance()
+                    val users = remember { mutableStateOf<List<UserDataResponse>>(emptyList()) }
+
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        val resultado = retrofit.getUsers()
+                        withContext(Dispatchers.Main) {
+                            if (resultado.isSuccessful) {
+                                users.value = resultado.body() ?: emptyList()
+                            }
+                        }
+                    }
+                    UserList(users = users.value)
                 }
             }
         }
     }
 }
+
 @Composable
-fun SuperheroList(superheroes: List<SuperHeroItemResponse>) {
-    LazyColumn {
-        items(superheroes) { superhero ->
+fun UserList(users: List<UserDataResponse>) {
+    LazyColumn(
+        modifier = Modifier
+            .padding(10.dp)
+            .fillMaxSize()
+    ) {
+        item {
+            Text(text = "Lista de Usuarios", modifier = Modifier.padding(vertical = 8.dp))
+        }
+        items(users) { user ->
             Text(
-                text = superhero.name,
-                modifier = Modifier.padding(16.dp) // Añadimos padding para que se vea bien
+                text = "ID: ${user.id} / Nombre: ${user.name} / Username: ${user.username} / Email: ${user.email}",
+                modifier = Modifier.padding(vertical = 8.dp)
             )
         }
     }
