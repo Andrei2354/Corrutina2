@@ -61,7 +61,7 @@ fun UserList(users: List<UserDataResponse>) {
         }
         items(users) { user ->
             Text(
-                text = "ID: ${user.id} / Nombre: ${user.name} / Username: ${user.username} / Email: ${user.email}",
+                text = "ID: ${user.id} / Nombre: ${user.name} / Username: ${user.username} / Email: ${user.email} /Address: ${user.address.city} /Latitud ${user.address.geo.lat} /Longitud ${user.address.geo.lng}  /Company: ${user.company.bs}",
                 modifier = Modifier.padding(vertical = 8.dp)
             )
         }
